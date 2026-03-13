@@ -8,7 +8,7 @@ app.use(express.json())
 app.use(cookieParser())
 
 app.use(cors({
-    origin: true,
+    origin: "https://prep-pilot-ai-blush.vercel.app",
     credentials: true
 }))
 
