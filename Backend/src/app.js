@@ -11,6 +11,7 @@ app.use(cors({
     origin: "https://prep-pilot-ai-blush.vercel.app",
     credentials: true
 }))
+app.set('trust proxy', 1);
 
 /* require all the routes here */
 const authRouter = require("./routes/auth.routes")
