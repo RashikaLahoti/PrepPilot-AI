@@ -50,4 +50,27 @@ interviewRouter.post(
   interviewController.generateResumePdfController,
 );
 
+/**
+ * @route PATCH /api/interview/:interviewId/pin
+ * @description toggle pin/unpin status of an interview report.
+ * @access private
+ */
+interviewRouter.patch(
+  "/:interviewId/pin",
+  authMiddleware.authUser,
+  interviewController.togglePinInterviewReportController,
+);
+
+/**
+ * @route DELETE /api/interview/:interviewId
+ * @description delete an interview report.
+ * @access private
+ */
+interviewRouter.delete(
+  "/:interviewId",
+  authMiddleware.authUser,
+  interviewController.deleteInterviewReportController,
+);
+
 module.exports = interviewRouter;
+

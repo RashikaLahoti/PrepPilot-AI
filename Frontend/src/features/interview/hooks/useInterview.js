@@ -3,14 +3,14 @@ import {
   generateInterviewReport,
   getInterviewReportById,
   generateResumePdf,
+  togglePinInterviewReport,
+  deleteInterviewReport,
 } from "../services/interview.api";
-import { useContext, useEffect } from "react";
+import { useContext } from "react";
 import { InterviewContext } from "../interview.context";
-import { useParams } from "react-router";
 
 export const useInterview = () => {
   const context = useContext(InterviewContext);
-  const { interviewId } = useParams();
 
   if (!context) {
     throw new Error("useInterview must be used within an InterviewProvider");
@@ -25,87 +25,83 @@ export const useInterview = () => {
     resumeFile,
   }) => {
     setLoading(true);
-    let response = null;
     try {
-      response = await generateInterviewReport({
+      const response = await generateInterviewReport({
         jobDescription,
         selfDescription,
         resumeFile,
       });
-      setReport(response.interviewReport);
-    } catch (error) {
-      console.log(error);
+
+      if (response && response.interviewReport) {
+        setReport(response.interviewReport);
+        return response.interviewReport;
+      }
+      throw new Error("Invalid response received from server.");
     } finally {
       setLoading(false);
     }
-
-    return response.interviewReport;
   };
 
   const getReportById = async (interviewId) => {
     setLoading(true);
-    let response = null;
     try {
-      response = await getInterviewReportById(interviewId);
-      setReport(response.interviewReport);
-    } catch (error) {
-      console.log(error);
+      const response = await getInterviewReportById(interviewId);
+      if (response && response.interviewReport) {
+        setReport(response.interviewReport);
+        return response.interviewReport;
+      }
+      throw new Error("Interview report not found.");
     } finally {
       setLoading(false);
     }
-    return response.interviewReport;
   };
 
   const getReports = async () => {
-    setLoading(true);
-    let response = null;
-    try {
-      response = await getAllInterviewReports();
+    const response = await getAllInterviewReports();
+    if (response && response.interviewReports) {
       setReports(response.interviewReports);
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setLoading(false);
+      return response.interviewReports;
     }
+    return [];
+  };
 
-    return response.interviewReports;
+  const togglePinReport = async (interviewId) => {
+    const response = await togglePinInterviewReport(interviewId);
+    return response;
+  };
+
+  const deleteReport = async (interviewId) => {
+    const response = await deleteInterviewReport(interviewId);
+    return response;
   };
 
   const getResumePdf = async (interviewReportId) => {
-    setLoading(true);
-    let response = null;
-    try {
-      response = await generateResumePdf({ interviewReportId });
-      const url = window.URL.createObjectURL(
-        new Blob([response], { type: "application/pdf" }),
-      );
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", `resume_${interviewReportId}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setLoading(false);
-    }
+    const response = await generateResumePdf({ interviewReportId });
+    const url = window.URL.createObjectURL(
+      new Blob([response], { type: "application/pdf" }),
+    );
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `resume_${interviewReportId}.pdf`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+    return true;
   };
-
-  useEffect(() => {
-    if (interviewId) {
-      getReportById(interviewId);
-    } else {
-      getReports();
-    }
-  }, [interviewId]);
 
   return {
     loading,
+    setLoading,
     report,
+    setReport,
     reports,
+    setReports,
     generateReport,
     getReportById,
     getReports,
+    togglePinReport,
+    deleteReport,
     getResumePdf,
   };
 };

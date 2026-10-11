@@ -6,7 +6,7 @@ $bg-input: #1e2535;
 $border-color: #2a3348;
 $text-primary: #e6edf3;
 $text-muted: #7d8590;
-$accent: #ff2d78;
+$accent: #06B6D4;
 $font-stack: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
 // severity palette
@@ -88,6 +88,10 @@ $severity-low: #3fb950;
         &:hover svg {
             stroke: $text-primary;
         }
+
+        .back-text-short {
+            display: none;
+        }
     }
 
     .nav-bottom {
@@ -136,6 +140,14 @@ $severity-low: #3fb950;
             .interview-nav__icon svg {
                 stroke: $accent;
             }
+        }
+
+        .tab-label-short {
+            display: none;
+        }
+
+        .tab-label-full {
+            display: inline;
         }
     }
 
@@ -528,9 +540,9 @@ $severity-low: #3fb950;
 
     .interview-nav {
         width: 100%;
-        flex-direction: row;
-        overflow-x: auto;
-        padding: 1rem;
+        flex-direction: column;
+        overflow: visible;
+        padding: 0.85rem 1rem;
         background-color: $bg-card;
         border: 1px solid $border-color;
         border-radius: 0.75rem;
@@ -538,34 +550,154 @@ $severity-low: #3fb950;
         position: sticky;
         top: 0;
         z-index: 10;
+        gap: 0.75rem;
 
-        &__label {
-            display: none;
-        }
+        .nav-bottom {
+            order: 1;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            padding-top: 0;
+            border-top: none;
+            gap: 0.75rem;
 
-        .back-btn {
-            margin-bottom: 0;
-            padding: 0.5rem;
-            
-            span {
-                display: none; // hide "Back to Home" text on mobile if needed, but wait, I didn't wrap it in span
+            .back-btn {
+                order: 1;
+                width: auto;
+                display: inline-flex;
+                align-items: center;
+                gap: 0.5rem;
+                padding: 0.5rem 0.85rem;
+                background-color: rgba(255, 255, 255, 0.04);
+                border: 1px solid $border-color;
+                border-radius: 0.5rem;
+                color: $text-primary;
+                font-size: 0.825rem;
+                font-weight: 500;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                white-space: nowrap;
+
+                &:hover {
+                    background-color: $bg-panel;
+                    border-color: rgba($accent, 0.4);
+                    color: $accent;
+
+                    svg {
+                        stroke: $accent;
+                    }
+                }
+
+                svg {
+                    width: 15px;
+                    height: 15px;
+                    stroke: $text-muted;
+                    flex-shrink: 0;
+                }
+
+                .back-text-full {
+                    display: inline;
+                }
+
+                .back-text-short {
+                    display: none;
+                }
+            }
+
+            .primary-button {
+                order: 2;
+                margin: 0;
+                padding: 0.5rem 0.95rem;
+                font-size: 0.8rem;
+                border-radius: 0.5rem;
+                white-space: nowrap;
+                display: inline-flex;
+                align-items: center;
+                gap: 0.45rem;
+                width: auto;
+                height: fit-content;
+
+                svg {
+                    margin-right: 0 !important;
+                    height: 0.75rem;
+                }
             }
         }
 
-        &__item {
-            width: auto;
-            white-space: nowrap;
-        }
+        .nav-content {
+            order: 2;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.35rem;
+            width: 100%;
+            background-color: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 0.6rem;
+            padding: 0.25rem;
+            overflow: visible;
 
-        .primary-button {
-            padding: 0.5rem 1rem;
-            font-size: 0.75rem;
-            border-radius: 0.5rem;
-            height: fit-content;
-            align-self: center;
+            .interview-nav__label {
+                display: none;
+            }
 
-            svg {
-                height: 0.7rem;
+            .interview-nav__item {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0.4rem;
+                width: 100%;
+                padding: 0.5rem 0.25rem;
+                font-size: 0.8rem;
+                font-weight: 500;
+                border-radius: 0.45rem;
+                border: 1px solid transparent;
+                text-align: center;
+                white-space: nowrap;
+                transition: all 0.2s ease;
+                color: $text-muted;
+
+                .interview-nav__icon {
+                    display: inline-flex;
+                    align-items: center;
+                    flex-shrink: 0;
+
+                    svg {
+                        width: 14px;
+                        height: 14px;
+                        stroke: $text-muted;
+                        transition: stroke 0.2s;
+                    }
+                }
+
+                .tab-label-full {
+                    display: none;
+                }
+
+                .tab-label-short {
+                    display: inline;
+                }
+
+                &:hover:not(&--active) {
+                    background-color: rgba(255, 255, 255, 0.06);
+                    color: $text-primary;
+
+                    .interview-nav__icon svg {
+                        stroke: $text-primary;
+                    }
+                }
+
+                &--active {
+                    background-color: rgba($accent, 0.15);
+                    border-color: rgba($accent, 0.4);
+                    color: $accent;
+                    font-weight: 600;
+
+                    .interview-nav__icon svg {
+                        stroke: $accent;
+                    }
+                }
             }
         }
     }
@@ -610,5 +742,74 @@ $severity-low: #3fb950;
         flex-direction: column;
         align-items: flex-start;
         gap: 0.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .interview-page {
+        padding: 0.75rem;
+    }
+
+    .interview-nav {
+        padding: 0.75rem;
+        gap: 0.6rem;
+
+        .nav-bottom {
+            gap: 0.5rem;
+
+            .back-btn {
+                padding: 0.4rem 0.65rem;
+                font-size: 0.775rem;
+                gap: 0.35rem;
+
+                svg {
+                    width: 14px;
+                    height: 14px;
+                }
+
+                .back-text-full {
+                    display: none !important;
+                }
+
+                .back-text-short {
+                    display: inline !important;
+                }
+            }
+
+            .primary-button {
+                padding: 0.4rem 0.75rem;
+                font-size: 0.775rem;
+            }
+        }
+
+        .nav-content {
+            gap: 0.25rem;
+            padding: 0.2rem;
+
+            .interview-nav__item {
+                padding: 0.4rem 0.15rem;
+                font-size: 0.725rem;
+                gap: 0.25rem;
+
+                .interview-nav__icon svg {
+                    width: 13px;
+                    height: 13px;
+                }
+            }
+        }
+    }
+}
+
+.section-empty {
+    padding: 2.5rem 1rem;
+    text-align: center;
+    color: $text-muted;
+    background-color: $bg-panel;
+    border: 1px dashed $border-color;
+    border-radius: 0.6rem;
+    font-size: 0.875rem;
+
+    p {
+        margin: 0;
     }
 }

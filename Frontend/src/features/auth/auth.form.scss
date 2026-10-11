@@ -1,53 +1,172 @@
-main{
-    min-height: 100vh;
-    width: 100%;
+$accent: #06b6d4;
+$accent-alt: #38d9f5;
+
+main {
+  min-height: 100vh;
+  width: 100%;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #0d1117;
+
+  .form-container {
+    min-width: 350px;
 
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    label {
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: #7d8590;
+      letter-spacing: 0.02em;
+    }
+
+    input {
+      border: 1px solid #2a3348;
+      outline: none;
+      padding-inline: 1rem;
+      padding-block: 0.75rem;
+      border-radius: 0.75rem;
+      background-color: #1e2535;
+      color: #e6edf3;
+      font-size: 0.875rem;
+      transition: border-color 0.2s;
+
+      &::placeholder {
+        color: #4a5568;
+      }
+
+      &:focus {
+        border-color: $accent;
+      }
+
+      &.input-error {
+        border-color: #ef4444 !important;
+        background-color: rgba(#ef4444, 0.05);
+
+        &:focus {
+          border-color: #ef4444 !important;
+        }
+      }
+
+      &:disabled {
+        opacity: 0.65;
+        cursor: not-allowed;
+      }
+    }
+  }
+
+  a {
+    color: $accent;
+    text-decoration: none;
+    font-weight: 500;
+
+    &:hover {
+      color: $accent-alt;
+    }
+  }
+
+  // ── Auth Header ───────────────────────────────────────────────────────────
+  .auth-header {
+    display: flex;
+    flex-direction: column;
     align-items: center;
+    text-align: center;
+    gap: 0.4rem;
+    margin-bottom: 0.5rem;
 
+    &__logo {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      background: linear-gradient(
+        135deg,
+        $accent 0%,
+        darken($accent, 12%) 100%
+      );
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 0.6rem;
+      box-shadow: 0 0 20px rgba($accent, 0.25);
 
-    .form-container{
-        min-width: 350px;
-
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
+      svg {
+        stroke: #fff;
+      }
     }
 
-    form{
-        display: flex;
-        flex-direction: column;
-        gap: 0.75rem;
+    &__title {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #e6edf3;
+      margin: 0;
+      letter-spacing: -0.02em;
     }
 
-    .input-group{
-        display: flex;
-        flex-direction: column;
+    &__subtitle {
+      margin: 0;
+      font-size: 0.85rem;
+      color: #7d8590;
+      line-height: 1.5;
+    }
+  }
 
-        gap: 0.5rem;
+  // ── Auth Footer Text ──────────────────────────────────────────────────────
+  .auth-footer-text {
+    text-align: center;
+    font-size: 0.83rem;
+    color: #7d8590;
+    margin: 0;
+  }
 
+  .button.primary-button {
+    width: 100%;
+    padding-block: 0.8rem;
+    border-radius: 0.75rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    background: linear-gradient(135deg, $accent 0%, darken($accent, 10%) 100%);
+    transition:
+      opacity 0.2s,
+      transform 0.15s;
 
-        input{
-            border: none;
-            outline: none;
-            padding-inline: 1rem;
-            padding-block: 0.75rem;
-            border-radius: 0.75rem;
-        }
+    &:hover {
+      opacity: 0.88;
     }
 
-    a{
-        color: #e1034d;
-        text-decoration: none;
+    &:active {
+      transform: scale(0.97);
     }
 
-    @media (max-width: 480px) {
-        .form-container {
-            min-width: unset;
-            width: 100%;
-            padding: 1.5rem;
-            max-width: 400px;
-        }
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none !important;
     }
+  }
+
+  @media (max-width: 480px) {
+    .form-container {
+      min-width: unset;
+      width: 100%;
+      padding: 1.5rem;
+      max-width: 400px;
+    }
+  }
 }

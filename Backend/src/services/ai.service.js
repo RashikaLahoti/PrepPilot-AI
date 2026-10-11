@@ -3,9 +3,12 @@ const { z } = require("zod");
 const { zodToJsonSchema } = require("zod-to-json-schema");
 const puppeteer = require("puppeteer");
 
-const ai = new GoogleGenAI({
-  apiKey: process.env.GOOGLE_GENAI_API_KEY,
-});
+const keys = [
+  process.env.GEMINI_API_KEY,
+  process.env.GEMINI_API_KEY1,
+  process.env.GEMINI_API_KEY2,
+  process.env.GEMINI_API_KEY3,
+].filter(Boolean);
 
 const interviewReportSchema = z.object({
   matchScore: z
@@ -91,29 +94,100 @@ const interviewReportSchema = z.object({
     .describe(
       "The title of the job for which the interview report is generated",
     ),
+  resumeHtml: z.string().describe("HTML resume tailored for this job"),
 });
+
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function generateWithFallback(prompt, schema) {
+  for (const key of keys) {
+    try {
+      console.log("Trying key:", key?.slice(-6));
+
+      const ai = new GoogleGenAI({ apiKey: key });
+
+      const response = await ai.models.generateContent({
+        model: "gemini-3.8-flash",
+        contents: prompt,
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: zodToJsonSchema(schema),
+          temperature: 0.2,
+          maxOutputTokens: 2000,
+        },
+      });
+
+      return JSON.parse(response.text);
+    } catch (error) {
+      console.log("Error from key:", key?.slice(-6));
+      console.log(error.message);
+
+      if (
+        error.message.includes("quota") ||
+        error.message.includes("RESOURCE_EXHAUSTED") ||
+        error.status === 429
+      ) {
+        console.log("Quota or rate limit hit. Waiting 3 seconds...");
+
+        await delay(32000); // 👈 THIS IS THE RETRY DELAY
+
+        continue;
+      }
+
+      throw error;
+    }
+  }
+
+  throw new Error("All Gemini API keys exhausted");
+}
+
+function compressResume(resumeText) {
+  const lines = resumeText.split("\n");
+
+  const importantLines = lines.filter((line) =>
+    line.match(
+      /experience|project|skill|education|react|node|java|python|mongodb|api/i,
+    ),
+  );
+
+  return importantLines.join("\n");
+}
 
 async function generateInterviewReport({
   resume,
   selfDescription,
   jobDescription,
 }) {
-  const prompt = `Generate an interview report for a candidate with the following details:
-                        Resume: ${resume}
-                        Self Description: ${selfDescription}
-                        Job Description: ${jobDescription}
+  const compressedResume = compressResume(resume);
+  console.log("Compressed Resume- >", compressedResume);
+
+  const prompt = `
+Generate a detailed interview preparation report.
+
+Resume:
+${compressedResume}
+
+Self Description:
+${selfDescription}
+
+Job Description:
+${jobDescription}
+
+Return JSON containing:
+- matchScore
+- title
+- technicalQuestions
+- behavioralQuestions
+- skillGaps
+- preparationPlan
+- resumeHtml
 `;
 
-  const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
-    contents: prompt,
-    config: {
-      responseMimeType: "application/json",
-      responseSchema: zodToJsonSchema(interviewReportSchema),
-    },
-  });
+  const result = await generateWithFallback(prompt, interviewReportSchema);
 
-  return JSON.parse(response.text);
+  return result;
 }
 
 async function generatePdfFromHtml(htmlContent) {
@@ -126,62 +200,29 @@ async function generatePdfFromHtml(htmlContent) {
     ],
   });
 
-  const page = await browser.newPage();
+  try {
+    const page = await browser.newPage();
+    await page.setContent(htmlContent, { waitUntil: "networkidle0" });
 
-  await page.setContent(htmlContent, { waitUntil: "networkidle0" });
+    const pdfBuffer = await page.pdf({
+      format: "A4",
+      margin: {
+        top: "20mm",
+        bottom: "20mm",
+        left: "15mm",
+        right: "15mm",
+      },
+      printBackground: true,
+    });
 
-  const pdfBuffer = await page.pdf({
-    format: "A4",
-    margin: {
-      top: "20mm",
-      bottom: "20mm",
-      left: "15mm",
-      right: "15mm",
-    },
-    printBackground: true,
-  });
-
-  await browser.close();
-
-  return pdfBuffer;
+    return pdfBuffer;
+  } finally {
+    await browser.close();
+  }
 }
 
-async function generateResumePdf({ resume, selfDescription, jobDescription }) {
-  const resumePdfSchema = z.object({
-    html: z
-      .string()
-      .describe(
-        "The HTML content of the resume which can be converted to PDF using any library like puppeteer",
-      ),
-  });
-
-  const prompt = `Generate resume for a candidate with the following details:
-                        Resume: ${resume}
-                        Self Description: ${selfDescription}
-                        Job Description: ${jobDescription}
-
-                        the response should be a JSON object with a single field "html" which contains the HTML content of the resume which can be converted to PDF using any library like puppeteer.
-                        The resume should be tailored for the given job description and should highlight the candidate's strengths and relevant experience. The HTML content should be well-formatted and structured, making it easy to read and visually appealing.
-                        The content of resume should be not sound like it's generated by AI and should be as close as possible to a real human-written resume.
-                        you can highlight the content using some colors or different font styles but the overall design should be simple and professional.
-                        The content should be ATS friendly, i.e. it should be easily parsable by ATS systems without losing important information.
-                        The resume should not be so lengthy, it should ideally be 1-2 pages long when converted to PDF. Focus on quality rather than quantity and make sure to include all the relevant information that can increase the candidate's chances of getting an interview call for the given job description.
-                    `;
-
-  const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
-    contents: prompt,
-    config: {
-      responseMimeType: "application/json",
-      responseSchema: zodToJsonSchema(resumePdfSchema),
-    },
-  });
-
-  const jsonContent = JSON.parse(response.text);
-  //Debug log
-  console.log("Generated HTML length:", jsonContent.html.length);
-
-  const pdfBuffer = await generatePdfFromHtml(jsonContent.html);
+async function generateResumePdf(htmlContent) {
+  const pdfBuffer = await generatePdfFromHtml(htmlContent);
 
   return pdfBuffer;
 }

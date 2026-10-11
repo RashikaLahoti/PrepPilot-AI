@@ -56,3 +56,21 @@ export const generateResumePdf = async ({ interviewReportId }) => {
 
     return response.data
 }
+
+
+/**
+ * @description Service to toggle pin/unpin status of an interview report.
+ */
+export const togglePinInterviewReport = async (interviewId) => {
+    const response = await api.patch(`/api/interview/${interviewId}/pin`);
+    return response.data;
+};
+
+
+/**
+ * @description Service to delete an interview report.
+ */
+export const deleteInterviewReport = async (interviewId) => {
+    const response = await api.delete(`/api/interview/${interviewId}`);
+    return response.data;
+};
