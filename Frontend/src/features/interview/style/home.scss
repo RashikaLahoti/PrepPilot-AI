@@ -946,3 +946,19 @@ $font-stack:     system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Robot
         }
     }
 }
+
+
+.loading-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    text-align: center;
+    gap: 0.5rem;
+}
+
+.loading-screen h1,
+.loading-screen p {
+    margin: 0;
+}

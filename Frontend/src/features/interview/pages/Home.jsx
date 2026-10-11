@@ -233,6 +233,7 @@ const Home = () => {
     return (
       <main className="loading-screen">
         <h1>Loading your interview plan...</h1>
+        
         <p style={{ marginTop: "0.5rem", color: "#7d8590", fontSize: "0.9rem" }}>
           AI analysis in progress (approx 30s). Please wait...
         </p>
